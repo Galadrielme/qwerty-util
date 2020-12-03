@@ -1,0 +1,27 @@
+{
+  "name": "qwerty-util",
+  "version": "1.0.0",
+  "description": "For less code",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Galadrielme/qwerty-util.git"
+  },
+  "keywords": [
+    "qwerty"
+  ],
+  "author": "kaihua.wang",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Galadrielme/qwerty-util/issues"
+  },
+  "homepage": "https://github.com/Galadrielme/qwerty-util#readme",
+  "dependencies": {
+    "@typescript-eslint/eslint-plugin": "^4.9.0",
+    "@typescript-eslint/parser": "^4.9.0",
+    "eslint": "^7.14.0"
+  }
+}
