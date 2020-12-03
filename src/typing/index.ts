@@ -1,7 +1,7 @@
 /**
  * @author kaihua.wang
  * @since 2020-12-03 21:47:18
- * @modify 2020-12-03 23:28:25
+ * @modify 2020-12-04 00:10:21
  * @description
  */
 
@@ -65,7 +65,7 @@ export function isObject ( o: any ): boolean {
 }
 
 export function isArray ( o: any ): boolean {
-    return isNativeTypeof( o, 'Object' );
+    return isNativeTypeof( o, 'Array' );
 }
 
 export function isPromise ( o: any ): boolean {

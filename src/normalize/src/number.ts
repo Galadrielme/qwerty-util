@@ -1,11 +1,12 @@
 /**
  * @author kaihua.wang
  * @since 2020-12-03 21:17:20
- * @modify 2020-12-04 00:04:43
+ * @modify 2020-12-04 00:37:16
  * @description
  */
 import { NormalizeTypeItf } from '../type';
 import { isArray, isFunction, isNumber, isValidNumber, typing } from '../../typing'
+import { toTrue } from 'src/static-fn';
 
 let KEY= {};
 
@@ -36,11 +37,31 @@ function initialization ( instance: NormalizeNumber, option: NormalizeNumberInit
             let roundFn: Function = Math.floor;
             if ( round != null ) switch ( round ) { case 'ceil': case 'C': case 1: roundFn = Math.ceil; break; case 'floor': case 'F': case 0: roundFn = Math.floor; break; }
 
+            let normalizedRange:any[] = normalizeRange( range );
+            let inRange: ( n: number ) => boolean = normalizedRange && normalizedRange.length > 0 ? function inRange ( n: number ) {
+                return normalizedRange.every( r => {
+                    for ( let key in r ) {
+                        switch ( key ) {
+                            case 'gt': { if ( r.gt >= n ) return false; break; }
+                            case 'gte': { if ( r.gte > n ) return false; break; }
+                            case 'lt': { if ( r.lt <= n ) return false; break; }
+                            case 'lte': { if ( r.lte < n ) return false; break; }
+                        }
+                        return true;
+                    }
+                })
+            } : toTrue; 0;
+            if ( isArray( enums ) ) {
+                enums = normalizedRange.length > 0 ? enums.filters(inRange) :enums.slice( 0 );
+            }
 
         }
         case 'String':
     }
+    /** @todo */
+    return {} as any;
 }
+
 
 function normalizeRange ( range: NormalizeNumberInitializationOptionRange[] ): {gt?: number, gte?: number, lt?: number, lte?: number}[] {
     let normalized: any[] = [];
@@ -76,6 +97,7 @@ function normalizeRange ( range: NormalizeNumberInitializationOptionRange[] ): {
 
                             r[ left ? 'gte' : 'gt' ] = ns[ 0 ];
                             r[ right ? 'lte' : 'lt' ] =  ns[ 1 ] ;
+                            return normalized.push(r);
                         }
                     }
                 }
@@ -121,7 +143,7 @@ type NormalizeNumberInitializationOption = {
     /**
      * @description Number interval
      */
-    skip?: { start: number, step: number }
+    skip?: { mark: number, step: number }
     /**
      * @description Which method to use to convert numbers? [Math.round, Math.floor, Math.ceil]
      * @default 'round'
@@ -143,7 +165,7 @@ type NormalizeNumberInitializationOption = {
      * @example {
      *      (expression)|(expression)|(expression)...
      *
-     *      e.g: '.0|(5,10)|(15,20)|{6,7,8,16,17}|1+3|R'
+     *      e.g: '.0|(5,10)|(15,20)|{6,7,8,16,17}|%3-1|R'
      *      #1: .0                              ==> { fixed: 0 },
      *      #2: (5,10)|(15,20)                  ==> { range: [{gt: 5, lt: 10}, {gt: 15, lt: 20}] }
      *      #3: {6,7,8,16,17}                   ==> { enums: [6, 7, 8, 16, 17] }
