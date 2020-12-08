@@ -4,6 +4,7 @@
     "description": "For less code",
     "main": "index.ts",
     "scripts": {
+        "build": "tsc",
         "test": "mocha"
     },
     "repository": {
@@ -19,8 +20,7 @@
         "url": "https://github.com/Galadrielme/qwerty-util/issues"
     },
     "homepage": "https://github.com/Galadrielme/qwerty-util#readme",
-    "dependencies": {
-    },
+    "dependencies": {},
     "devDependencies": {
         "@typescript-eslint/eslint-plugin": "^4.9.0",
         "@typescript-eslint/parser": "^4.9.0",
