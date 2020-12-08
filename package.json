@@ -1,27 +1,36 @@
 {
-  "name": "qwerty-util",
-  "version": "1.0.0",
-  "description": "For less code",
-  "main": "index.ts",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Galadrielme/qwerty-util.git"
-  },
-  "keywords": [
-    "qwerty"
-  ],
-  "author": "kaihua.wang",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/Galadrielme/qwerty-util/issues"
-  },
-  "homepage": "https://github.com/Galadrielme/qwerty-util#readme",
-  "dependencies": {
-    "@typescript-eslint/eslint-plugin": "^4.9.0",
-    "@typescript-eslint/parser": "^4.9.0",
-    "eslint": "^7.14.0"
-  }
+    "name": "qwerty-util",
+    "version": "1.0.0",
+    "description": "For less code",
+    "main": "index.ts",
+    "scripts": {
+        "test": "mocha"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/Galadrielme/qwerty-util.git"
+    },
+    "keywords": [
+        "qwerty"
+    ],
+    "author": "kaihua.wang",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/Galadrielme/qwerty-util/issues"
+    },
+    "homepage": "https://github.com/Galadrielme/qwerty-util#readme",
+    "dependencies": {
+    },
+    "devDependencies": {
+        "@typescript-eslint/eslint-plugin": "^4.9.0",
+        "@typescript-eslint/parser": "^4.9.0",
+        "eslint": "^7.14.0",
+        "vue-next": "0.0.1",
+        "@types/chai": "^4.2.14",
+        "@types/mocha": "^8.0.4",
+        "chai": "^4.2.0",
+        "mocha": "^8.2.1",
+        "ts-node": "^9.1.0",
+        "typescript": "^4.1.2"
+    }
 }

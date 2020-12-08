@@ -1,0 +1,6 @@
+{
+    "file": "./test/index.ts",
+    "require": "ts-node/register",
+    "reporter": "spec",
+    "color": true
+}
