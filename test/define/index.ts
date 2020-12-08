@@ -1,7 +1,7 @@
 /**
  * @author kaihua.wang
  * @since 2020-12-08 21:49:27
- * @modify 2020-12-08 23:19:51
+ * @modify 2020-12-09 00:11:34
  * @description
  */
 import * as mocha from 'mocha';
@@ -35,7 +35,6 @@ describe( 'src/define.ts', () => {
         it( 'define o.c should be 3', () => {
             expect( o.c ).to.equal( 3 );
         } );
-        console.log( "o ====> ", define.toString(), o );
     } );
 } );
 
