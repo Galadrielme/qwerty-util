@@ -4,6 +4,7 @@
     "description": "For less code",
     "main": "index.ts",
     "scripts": {
+        "publish": "npm version patch \nnpm publish",
         "build": "tsc",
         "test": "mocha"
     },
