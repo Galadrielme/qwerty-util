@@ -1,7 +1,7 @@
 /**
  * @author kaihua.wang
  * @since 2020-12-08 21:45:45
- * @modify 2020-12-08 23:17:13
+ * @modify 2020-12-09 21:58:42
  * @description
  */
 
@@ -106,11 +106,10 @@ function defineFunction ( target: any, defines: {
     [ nama: string ]: any;
     [ nama: number ]: any;
 }, type: number | QuickEnum = 0 ) {
-    return;
     if ( target == null ) return target;
     if ( Object.prototype.toString.call( type ) === '[object String]' ) type = resolveStringEnum( type as string );
     Object.entries( defines ).forEach( ( [ name, define ] ) => {
-        if ( Object.prototype.toString.call( define ) === '[object Object]' || true ) {
+        if ( Object.prototype.toString.call( define ) === '[object Object]' ) {
             if ( 'value' in define )
                 return defineValueFunction( target, name, define.value, type );
             if ( ( 'get' in define && ( typeof define.get === 'function' ) ) || ( 'set' in define && ( typeof define.set === 'function' ) ) )

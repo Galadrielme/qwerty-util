@@ -1,7 +1,7 @@
 /**
  * @author kaihua.wang
  * @since 2020-12-08 21:49:27
- * @modify 2020-12-09 00:11:34
+ * @modify 2020-12-09 21:57:28
  * @description
  */
 import * as mocha from 'mocha';
@@ -10,7 +10,7 @@ import * as chai from 'chai';
 const expect = chai.expect;
 
 import define, { defineGetSet, defineValue } from '../../src/define';
-describe( 'src/define.ts', () => {
+describe( 'src/define', () => {
     describe( 'define', () => {
 
         let o: any = {};
@@ -22,7 +22,7 @@ describe( 'src/define.ts', () => {
                 value: 2
             },
             c: 3
-        } );
+        }, 'cwe' );
 
         it( 'define o.a should be 1', () => {
             expect( o.a ).to.equal( 1 );

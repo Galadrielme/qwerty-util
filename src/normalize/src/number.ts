@@ -1,14 +1,15 @@
 /**
  * @author kaihua.wang
  * @since 2020-12-03 21:17:20
- * @modify 2020-12-04 00:37:16
+ * @modify 2020-12-09 23:25:36
  * @description
  */
 import { NormalizeTypeItf } from '../type';
-import { isArray, isFunction, isNumber, isValidNumber, typing } from '../../typing'
-import { toTrue } from 'src/static-fn';
+import { isArray, isFunction, isInteger, isNumber, isValidNumber, typing } from '../../typing';
+import { toSelf, toTrue } from '../../../src/static-fn';
+import arrayFilter from '../../../src/array-filter';
 
-let KEY= {};
+let KEY = {};
 
 class NormalizeNumber implements NormalizeTypeItf<any, number> {
     private readonly __data__!: ( key: any ) => NormalizeTypeItf<any, number>;
@@ -22,39 +23,44 @@ class NormalizeNumber implements NormalizeTypeItf<any, number> {
 
 }
 
-function initialization ( instance: NormalizeNumber, option: NormalizeNumberInitializationOption ): NormalizeTypeItf<any, number>  {
+function initialization ( instance: NormalizeNumber, option: NormalizeNumberInitializationOption ): NormalizeTypeItf<any, number> {
     switch ( typing( option ) ) {
         case 'Object': {
             let o: any = option;
             //#region case 1
             if ( isFunction( o.test ) && isFunction( o.transfer ) ) {
                 let { test, transfer } = o;
-                return { test, transfer }
+                return { test, transfer };
             }
             //#endregion
+
+            let test: ( i: any ) => boolean = toTrue;
+            let transfer: ( i: any ) => number = toSelf;
 
             let { range, fixed, enums, skip, round } = o;
             let roundFn: Function = Math.floor;
             if ( round != null ) switch ( round ) { case 'ceil': case 'C': case 1: roundFn = Math.ceil; break; case 'floor': case 'F': case 0: roundFn = Math.floor; break; }
 
-            let normalizedRange:any[] = normalizeRange( range );
-            let inRange: ( n: number ) => boolean = normalizedRange && normalizedRange.length > 0 ? function inRange ( n: number ) {
-                return normalizedRange.every( r => {
-                    for ( let key in r ) {
-                        switch ( key ) {
-                            case 'gt': { if ( r.gt >= n ) return false; break; }
-                            case 'gte': { if ( r.gte > n ) return false; break; }
-                            case 'lt': { if ( r.lt <= n ) return false; break; }
-                            case 'lte': { if ( r.lte < n ) return false; break; }
-                        }
-                        return true;
-                    }
-                })
-            } : toTrue; 0;
-            if ( isArray( enums ) ) {
-                enums = normalizedRange.length > 0 ? enums.filters(inRange) :enums.slice( 0 );
-            }
+            let normalizedRange: any[] = normalizeRange( range );
 
+            let useInRange = normalizedRange && normalizedRange.length > 0,
+                useInFixed = isNumber( fixed ),
+                useInEnums = isArray( enums );
+
+            let inRange: ( n: number ) => boolean = useInRange ? bindInRange( normalizedRange ) : toTrue;
+            let inFixed: ( n: number ) => boolean = useInFixed ? bindInFixed( fixed ) : toTrue;
+            let inEnums: ( n: number ) => boolean = useInEnums ? bindInEnums( arrayFilter( enums, useInFixed && inFixed as any, useInRange && inFixed as any ) ) : toTrue;
+
+            if ( useInEnums ) {
+                test = inEnums;
+            } else if ( useInFixed && useInRange ) {
+                test = ( n: number ) => inFixed( n ) && inRange( n );
+            } else if ( useInFixed ) {
+                test = inFixed;
+            } else if ( useInRange ) {
+                test = inRange;
+            }
+            return { test, transfer };
         }
         case 'String':
     }
@@ -63,7 +69,7 @@ function initialization ( instance: NormalizeNumber, option: NormalizeNumberInit
 }
 
 
-function normalizeRange ( range: NormalizeNumberInitializationOptionRange[] ): {gt?: number, gte?: number, lt?: number, lte?: number}[] {
+function normalizeRange ( range: NormalizeNumberInitializationOptionRange[] ): { gt?: number, gte?: number, lt?: number, lte?: number; }[] {
     let normalized: any[] = [];
     if ( isArray( range ) ) {
         range.forEach( ( item ) => {
@@ -77,7 +83,7 @@ function normalizeRange ( range: NormalizeNumberInitializationOptionRange[] ): {
                     if ( right < 0 ) return;
                     s = s.slice( 1, -1 );
                     let ns: number[] = [];
-                    for ( let c of s.split(',') ) {
+                    for ( let c of s.split( ',' ) ) {
                         if ( !c ) return;
                         let n = Number( c );
                         if ( Number.isNaN( n ) ) return;
@@ -89,15 +95,14 @@ function normalizeRange ( range: NormalizeNumberInitializationOptionRange[] ): {
                             let r: any = {};
                             r[ left ? 'gte' : 'gt' ] = left ? ns[ 0 ] : -Infinity;
                             r[ right ? 'lte' : 'lt' ] = right ? [ ns[ 0 ] ] : Infinity;
-                            return normalized.push(r);
+                            return normalized.push( r );
                         }
                         case 2: {
                             let r: any = {};
-                            let [ $1, $2 ] = ns;
 
                             r[ left ? 'gte' : 'gt' ] = ns[ 0 ];
-                            r[ right ? 'lte' : 'lt' ] =  ns[ 1 ] ;
-                            return normalized.push(r);
+                            r[ right ? 'lte' : 'lt' ] = ns[ 1 ];
+                            return normalized.push( r );
                         }
                     }
                 }
@@ -110,15 +115,41 @@ function normalizeRange ( range: NormalizeNumberInitializationOptionRange[] ): {
                         hasLeft = hasGt || hasGte,
                         hasRight = hasLt || hasLte;
                     if ( !hasLeft && !hasRight ) return;
-                    let r: any = {}
+                    let r: any = {};
                     if ( hasLeft ) o.gt > o.gte ? ( r.gt = o.gt ) : ( r.gte = o.gte );
                     if ( hasRight ) o.lt < o.lte ? ( r.lt = o.lt ) : ( r.lte = o.lte );
-                    normalized.push(r);
+                    normalized.push( r );
                 }
             }
-        })
+        } );
     }
     return normalized;
+}
+
+function bindInRange ( range: any[] ) {
+    return function inRange ( n: number ) {
+        return range.every( r => {
+            for ( let key in r ) {
+                switch ( key ) {
+                    case 'gt': { if ( r.gt >= n ) return false; break; }
+                    case 'gte': { if ( r.gte > n ) return false; break; }
+                    case 'lt': { if ( r.lt <= n ) return false; break; }
+                    case 'lte': { if ( r.lte < n ) return false; break; }
+                }
+                return true;
+            }
+        } );
+    };
+}
+
+function bindInEnums ( enums: any[] ) {
+    return Array.prototype.includes.bind( enums );
+}
+
+function bindInFixed ( fixed: number ) {
+    if ( !isInteger( fixed ) ) fixed = Math.round( fixed );
+    let e = Math.pow( 10, fixed );
+    return ( n: number ) => Math.abs( n % e - n ) < Number.EPSILON;
 }
 
 type NormalizeNumberInitializationOption = {
@@ -135,7 +166,7 @@ type NormalizeNumberInitializationOption = {
     /**
      * @description Convert digital precision
      */
-    fixed?: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12,
+    fixed?: Number,
     /**
      * @description Enumerated numbers
      */
@@ -143,12 +174,12 @@ type NormalizeNumberInitializationOption = {
     /**
      * @description Number interval
      */
-    skip?: { mark: number, step: number }
+    skip?: { mark: number, step: number; };
     /**
      * @description Which method to use to convert numbers? [Math.round, Math.floor, Math.ceil]
      * @default 'round'
      */
-    round?: 'round' | 'ceil' | 'floor' | 'R' | 'C' | 'F' | 0 | 1
+    round?: 'round' | 'ceil' | 'floor' | 'R' | 'C' | 'F' | 0 | 1;
 } | {
     /**
      * @description Custom function test
@@ -157,7 +188,7 @@ type NormalizeNumberInitializationOption = {
     /**
      * @description Custom function transfer
      */
-    transfer ( i: any ): number
+    transfer ( i: any ): number;
 }
     |
     /**
@@ -179,4 +210,4 @@ type NormalizeNumberInitializationOption = {
      */
     string;
 
-type NormalizeNumberInitializationOptionRange = ( {gt?: number, gte?: number, lt?: number, lte?: number}) | string
+type NormalizeNumberInitializationOptionRange = ( { gt?: number, gte?: number, lt?: number, lte?: number; } ) | string;
